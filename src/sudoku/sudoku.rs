@@ -1,6 +1,6 @@
 pub struct Sudoku {
-    n: u32,
-    grid: Vec<Vec<Option<u32>>>,
+    pub n: u32,
+    pub grid: Vec<Vec<Option<u32>>>,
 }
 
 #[derive(Debug)]
@@ -23,7 +23,7 @@ impl Sudoku {
         let (x, y) = coords;
 
         // Max number is n^2
-        if x >= self.n.pow(2) && y >= self.n.pow(2) {
+        if x >= self.n.pow(2) || y >= self.n.pow(2) {
             return Err(ValidationError::OutOfGrid);
         };
 
@@ -96,5 +96,25 @@ impl Sudoku {
 
         self.grid[coords.1 as usize][coords.0 as usize] = Some(num);
         Ok(())
+    }
+
+    pub fn unset(&mut self, coords: (u32, u32)) {
+        self.grid[coords.1 as usize][coords.0 as usize] = None;
+    }
+
+    pub fn get_entropy(&self, coords: (u32, u32)) -> Option<Vec<u32>> {
+        if let Some(_) = self.get(coords) {
+            return None;
+        }
+
+        let mut allowed = vec![];
+
+        for i in 1..=self.n.pow(2) {
+            if self.is_valid(coords, i).is_ok() {
+                allowed.push(i);
+            }
+        }
+
+        return Some(allowed);
     }
 }
