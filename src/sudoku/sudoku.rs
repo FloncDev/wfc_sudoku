@@ -90,9 +90,7 @@ impl Sudoku {
     }
 
     pub fn set(&mut self, coords: (u32, u32), num: u32) -> Result<(), ValidationError> {
-        if let Err(err) = self.is_valid(coords, num) {
-            return Err(err);
-        }
+        self.is_valid(coords, num)?;
 
         self.grid[coords.1 as usize][coords.0 as usize] = Some(num);
         Ok(())
@@ -103,7 +101,7 @@ impl Sudoku {
     }
 
     pub fn get_entropy(&self, coords: (u32, u32)) -> Option<Vec<u32>> {
-        if let Some(_) = self.get(coords) {
+        if self.get(coords).is_some() {
             return None;
         }
 
@@ -115,6 +113,6 @@ impl Sudoku {
             }
         }
 
-        return Some(allowed);
+        Some(allowed)
     }
 }

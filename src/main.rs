@@ -17,6 +17,9 @@ fn conf() -> Conf {
     }
 }
 
+// TODO: Rewrite to make it not just a basic display
+// (Still need to figure out best way to show what's happening)
+
 #[macroquad::main(conf)]
 async fn main() {
     tracing_subscriber::fmt().init();
@@ -48,7 +51,7 @@ async fn main() {
                     0 => {
                         grid.unset(coords);
                     }
-                    num @ _ => {
+                    num => {
                         match grid.set(coords, num) {
                             Err(ValidationError::GroupHasSameNumber(x, y))
                             | Err(ValidationError::RegionHasSameNumber(x, y)) => {
