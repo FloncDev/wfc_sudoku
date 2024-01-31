@@ -8,6 +8,13 @@ pub enum ValidationError {
     OutOfGrid,
     RegionHasSameNumber(u32, u32),
     GroupHasSameNumber(u32, u32),
+    InvalidNum,
+}
+
+#[derive(Debug)]
+pub enum ConversionError {
+    InvalidGrid,
+    ParseError,
 }
 
 impl Sudoku {
@@ -18,6 +25,48 @@ impl Sudoku {
         Sudoku { n, grid }
     }
 
+    // Expects a n*n block of text, seperated by \n where n is a square number
+    pub fn from_string(input: String) -> Result<Self, ConversionError> {
+        // Check dimensions
+        let lines: Vec<String> = input.lines().map(|line| line.to_string()).collect();
+
+        let n = (lines.len() as f32).sqrt();
+
+        if n % 1.0 != 0.0 {
+            return Err(ConversionError::InvalidGrid);
+        }
+
+        if let Some(line) = lines.first() {
+            // True if line.len() is not a square number
+            if (line.len() as f32).sqrt() % 1.0 != 0.0 {
+                return Err(ConversionError::InvalidGrid);
+            }
+        }
+
+        let n = n as u32;
+
+        // Parse the grid
+        let mut grid = vec![vec![None; n.pow(2) as usize]; n.pow(2) as usize];
+
+        for (y, line) in lines.iter().enumerate() {
+            for (x, char) in line.to_string().chars().enumerate() {
+                if !char.is_numeric() {
+                    return Err(ConversionError::ParseError);
+                }
+
+                let num: u32 = char.to_string().parse().unwrap();
+
+                if num > num.pow(2) {
+                    return Err(ConversionError::ParseError);
+                }
+
+                grid[y][x] = if num == 0 { None } else { Some(num) };
+            }
+        }
+
+        Ok(Sudoku { n, grid })
+    }
+
     // (0, 0) is top right and (n^2-1, n^2-1) is bottom right
     pub fn is_valid(&self, coords: (u32, u32), num: u32) -> Result<bool, ValidationError> {
         let (x, y) = coords;
@@ -26,6 +75,9 @@ impl Sudoku {
         if x >= self.n.pow(2) || y >= self.n.pow(2) {
             return Err(ValidationError::OutOfGrid);
         };
+        if num > self.n.pow(2) {
+            return Err(ValidationError::InvalidNum);
+        }
 
         // Check same region
         // May seem weird to divide then multiply by n but it finds
